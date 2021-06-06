@@ -1,10 +1,6 @@
 /*
- * This file is part of MOS
- * <p>
- * Copyright (c) 2021 by cooder.org
- * <p>
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ * This file is part of MOS <p> Copyright (c) 2021 by cooder.org <p> For the full copyright and license information,
+ * please view the LICENSE file that was distributed with this source code.
  */
 package org.cooder.mos.device;
 
@@ -32,14 +28,14 @@ public class FileDisk implements IDisk {
 
     @Override
     public int sectorCount() {
-        return (int) (capacity() / sectorSize());
+        return (int)(capacity() / sectorSize());
     }
 
     @Override
     public long capacity() {
-        return 2 * 1024 * 1024 * 1024L;  // 2G
+        return 2 * 1024 * 1024 * 1024L; // 2G
     }
-    
+
     @Override
     public void readSector(int sectorIdx, byte[] buffer) {
         byte[] data = readSector(sectorIdx);
@@ -78,7 +74,7 @@ public class FileDisk implements IDisk {
         raf.setLength(0);
         raf.setLength(capacity());
     }
-    
+
     @Override
     public void close() throws IOException {
         raf.close();

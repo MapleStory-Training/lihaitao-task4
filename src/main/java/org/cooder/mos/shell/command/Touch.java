@@ -1,10 +1,6 @@
 /*
- * This file is part of MOS
- * <p>
- * Copyright (c) 2021 by cooder.org
- * <p>
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ * This file is part of MOS <p> Copyright (c) 2021 by cooder.org <p> For the full copyright and license information,
+ * please view the LICENSE file that was distributed with this source code.
  */
 package org.cooder.mos.shell.command;
 
@@ -18,7 +14,7 @@ import org.cooder.mos.fs.FileSystem;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "touch")
+@Command(name = "touch", description = "创建一个文件")
 public class Touch extends MosCommand {
     @Parameters(paramLabel = "<path>")
     private String path;
@@ -33,7 +29,7 @@ public class Touch extends MosCommand {
                 fos = new FileOutputStream(new MosFile(paths), FileSystem.WRITE);
             }
         } catch (IOException e) {
-            err.println(e.getMessage());
+            Utils.printlnErrorMsg(err, e.getMessage());
         } finally {
             Utils.close(fos);
         }

@@ -1,10 +1,6 @@
 /*
- * This file is part of MOS
- * <p>
- * Copyright (c) 2021 by cooder.org
- * <p>
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ * This file is part of MOS <p> Copyright (c) 2021 by cooder.org <p> For the full copyright and license information,
+ * please view the LICENSE file that was distributed with this source code.
  */
 package org.cooder.mos.fs;
 
@@ -16,10 +12,10 @@ import org.cooder.mos.fs.fat16.FatFileInputStream;
 import org.cooder.mos.fs.fat16.FatFileOutputStream;
 
 public class FileDescriptor {
+    final DirectoryTreeNode node;
     private final String[] paths;
     private FatFileInputStream fis;
     private FatFileOutputStream fos;
-    final DirectoryTreeNode node;
 
     FileDescriptor(String[] paths, DirectoryTreeNode node) {
         this.node = node;

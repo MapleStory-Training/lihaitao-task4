@@ -1,10 +1,6 @@
 /*
- * This file is part of MOS
- * <p>
- * Copyright (c) 2021 by cooder.org
- * <p>
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ * This file is part of MOS <p> Copyright (c) 2021 by cooder.org <p> For the full copyright and license information,
+ * please view the LICENSE file that was distributed with this source code.
  */
 package org.cooder.mos.fs.fat16;
 
@@ -14,8 +10,8 @@ import org.cooder.mos.fs.IFileSystem;
 import org.cooder.mos.fs.fat16.Layout.DirectoryEntry;
 
 public class DirectoryTreeNode {
-    private DirectoryEntry entry;
     public final DirectoryTreeNode parent;
+    private DirectoryEntry entry;
     private DirectoryTreeNode[] children;
     private int sectorIdx = -1;
     private int sectorOffset = -1;
@@ -24,6 +20,28 @@ public class DirectoryTreeNode {
     public DirectoryTreeNode(DirectoryTreeNode parent, DirectoryEntry entry) {
         this.parent = parent;
         this.entry = entry;
+    }
+
+    public static boolean nameEquals(DirectoryEntry entry, String fileName) {
+        return Arrays.equals(entry.fileName, string2ByteArray(fileName, DirectoryEntry.FILE_NAME_LENGTH));
+    }
+
+    public static byte[] string2ByteArray(String name, int length) {
+        byte[] b1 = name.getBytes();
+        byte[] b2 = new byte[length];
+        System.arraycopy(b1, 0, b2, 0, Math.min(b1.length, length));
+        return b2;
+    }
+
+    public static String byteArray2String(byte[] b) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < b.length; i++) {
+            if (b[i] == 0) {
+                break;
+            }
+            sb.append((char)(b[i] & 0xFF));
+        }
+        return sb.toString();
     }
 
     public DirectoryTreeNode[] getChildren() {
@@ -119,28 +137,6 @@ public class DirectoryTreeNode {
         return null;
     }
 
-    public static boolean nameEquals(DirectoryEntry entry, String fileName) {
-        return Arrays.equals(entry.fileName, string2ByteArray(fileName, DirectoryEntry.FILE_NAME_LENGTH));
-    }
-
-    public static byte[] string2ByteArray(String name, int length) {
-        byte[] b1 = name.getBytes();
-        byte[] b2 = new byte[length];
-        System.arraycopy(b1, 0, b2, 0, Math.min(b1.length, length));
-        return b2;
-    }
-
-    public static String byteArray2String(byte[] b) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < b.length; i++) {
-            if (b[i] == 0) {
-                break;
-            }
-            sb.append((char) (b[i] & 0xFF));
-        }
-        return sb.toString();
-    }
-
     public DirectoryTreeNode create(String name, boolean isDir) {
         DirectoryTreeNode node = nextFreeNode();
         DirectoryEntry entry = node.entry;
@@ -213,16 +209,6 @@ public class DirectoryTreeNode {
         this.children = null;
     }
 
-    public void setFileSize(int fileSize) {
-        this.entry.fileSize = fileSize;
-    }
-
-    public void setWriteTime(long currentTimeMillis) {
-        int sec = (int) (currentTimeMillis / 1000);
-        this.entry.lastWriteTime = (short) (sec & 0xFFFF);
-        this.entry.lastWriteDate = (short) (sec >>> 16 & 0xFFFF);
-    }
-
     public long getWriteTime() {
         long sec = 0x0000 | this.entry.lastWriteDate;
         sec = sec << 16;
@@ -230,7 +216,17 @@ public class DirectoryTreeNode {
         return sec * 1000;
     }
 
+    public void setWriteTime(long currentTimeMillis) {
+        int sec = (int)(currentTimeMillis / 1000);
+        this.entry.lastWriteTime = (short)(sec & 0xFFFF);
+        this.entry.lastWriteDate = (short)(sec >>> 16 & 0xFFFF);
+    }
+
     public int getFileSize() {
         return entry.fileSize;
+    }
+
+    public void setFileSize(int fileSize) {
+        this.entry.fileSize = fileSize;
     }
 }

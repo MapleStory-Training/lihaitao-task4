@@ -1,10 +1,6 @@
 /*
- * This file is part of MOS
- * <p>
- * Copyright (c) 2021 by cooder.org
- * <p>
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ * This file is part of MOS <p> Copyright (c) 2021 by cooder.org <p> For the full copyright and license information,
+ * please view the LICENSE file that was distributed with this source code.
  */
 package org.cooder.mos.fs.fat16;
 
@@ -29,8 +25,16 @@ public class FatFileInputStream extends InputStream {
         this.currentSectorIdx = sectorIdx;
         this.limit = limit;
         this.fat = fat;
-        
+
         disk.readSector(currentSectorIdx, buffer);
+    }
+
+    private static int firstSectorIdx(int clusterIdx) {
+        return Layout.getClusterDataStartSector(clusterIdx);
+    }
+
+    private static int lastSectorIdx(int clusterIdx) {
+        return Layout.getClusterDataLastSector(clusterIdx);
     }
 
     @Override
@@ -62,7 +66,7 @@ public class FatFileInputStream extends InputStream {
         if (next < 0) {
             return false;
         }
-        
+
         currentSectorIdx = next;
         disk.readSector(currentSectorIdx, buffer);
         pos = 0;
@@ -81,13 +85,5 @@ public class FatFileInputStream extends InputStream {
             next = currentSectorIdx + 1;
         }
         return next;
-    }
-
-    private static int firstSectorIdx(int clusterIdx) {
-        return Layout.getClusterDataStartSector(clusterIdx);
-    }
-
-    private static int lastSectorIdx(int clusterIdx) {
-        return Layout.getClusterDataLastSector(clusterIdx);
     }
 }

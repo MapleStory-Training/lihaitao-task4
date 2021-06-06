@@ -1,10 +1,6 @@
 /*
- * This file is part of MOS
- * <p>
- * Copyright (c) 2021 by cooder.org
- * <p>
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ * This file is part of MOS <p> Copyright (c) 2021 by cooder.org <p> For the full copyright and license information,
+ * please view the LICENSE file that was distributed with this source code.
  */
 package org.cooder.mos.api;
 
@@ -31,7 +27,7 @@ public class MosFile implements IFile {
     public String[] getPath() {
         return paths;
     }
-    
+
     public String getName() {
         return paths[paths.length - 1];
     }
@@ -65,7 +61,7 @@ public class MosFile implements IFile {
         if (parent == null) {
             return false;
         }
-        
+
         this.fd = MosSystem.fileSystem().createDirectory(parent, getName());
         return fd != null;
     }
@@ -77,7 +73,7 @@ public class MosFile implements IFile {
         }
 
         MosSystem.fileSystem().delete(fd);
-        
+
         fd = null;
         return true;
     }
@@ -85,7 +81,7 @@ public class MosFile implements IFile {
     @Override
     public MosFile[] listFiles() {
         String[] children = MosSystem.fileSystem().list(fd);
-        
+
         List<MosFile> list = new ArrayList<MosFile>();
         for (String path : children) {
             list.add(new MosFile(path));

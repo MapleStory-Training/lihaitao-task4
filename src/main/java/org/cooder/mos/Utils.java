@@ -1,17 +1,10 @@
 /*
- * This file is part of MOS
- * <p>
- * Copyright (c) 2021 by cooder.org
- * <p>
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ * This file is part of MOS <p> Copyright (c) 2021 by cooder.org <p> For the full copyright and license information,
+ * please view the LICENSE file that was distributed with this source code.
  */
 package org.cooder.mos;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -31,20 +24,61 @@ public class Utils {
         }
     }
 
-    public static void copyStreamNoCloseOut(InputStreamReader reader, PrintStream out) throws IOException {
+    public static void printMsgNotFlush(OutputStream outputStream, String msg) {
+        try {
+            outputStream.write(msg.getBytes());
+            // outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void writeNewLineNotFlush(OutputStream out) {
+        try {
+            out.write("\r\n".getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void printlnErrorMsg(OutputStream err, String msg) {
+        try {
+            err.write(msg.getBytes());
+            writeNewLineNotFlush(err);
+            err.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void printlnError(OutputStream outputStream, Throwable error) {
+        if (outputStream instanceof PrintStream) {
+            error.printStackTrace((PrintStream)outputStream);
+            return;
+        }
+        error.printStackTrace(new PrintStream(outputStream));
+    }
+
+    public static void copyStreamNoCloseOut(InputStreamReader reader, OutputStream out) throws IOException {
         try {
             int v = 0;
+            PrintStream outputStream;
+            if (out instanceof PrintStream) {
+                outputStream = (PrintStream)out;
+            } else {
+                outputStream = new PrintStream(out);
+            }
             while ((v = reader.read()) != -1) {
-                out.print((char) v);
+                outputStream.print((char)v);
             }
         } catch (IOException e) {
             throw e;
         } finally {
-            out.flush();
+            // out.flush();
             close(reader);
         }
     }
-    
+
     public static String[] normalizePath(String path) {
         List<String> ret = new ArrayList<>();
         String[] arr = path.split(IFileSystem.separator + "");

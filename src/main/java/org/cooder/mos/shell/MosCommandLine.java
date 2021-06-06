@@ -39,7 +39,7 @@ public class MosCommandLine extends CommandLine {
             : cmd.getCommandSpec().exitCodeOnInvalidInput();
     };
 
-    public MosCommandLine(Object command, OutputStream out, OutputStream err) {
+    MosCommandLine(Object command, OutputStream out, OutputStream err) {
         super(command);
         this.out = out;
         this.err = err;

@@ -35,9 +35,9 @@ public class Shell implements Runnable, org.apache.sshd.server.command.Command {
     public OutputStream out;
     public OutputStream err;
     private FileDescriptor current;
-    private ExecutorService executorService;
     private boolean stop;
     private ExitCallback callback;
+    public final ExecutorService executorService = initExecutor();
 
     public Shell() {}
 
@@ -45,32 +45,18 @@ public class Shell implements Runnable, org.apache.sshd.server.command.Command {
         return current.isRoot() ? current.getName() : current.getPath();
     }
 
-    // 循环任务
-    private void loop() {
-        try {
-            LineReader reader = LineReaderBuilder.builder()
-                .terminal(TerminalBuilder.builder().streams(in, out).encoding(StandardCharsets.UTF_8).build()).build();
-            while (!stop) {
-                String cmd = reader.readLine(prompt());
-                if ("exit".equals(cmd)) {
-                    Utils.printMsgNotFlush(out, "bye~");
-                    stop = true;
-                } else if (cmd.length() == 0) {
-                    continue;
-                }
+    /**
+     * 初始化线程池
+     *
+     * @return
+     */
+    private static ExecutorService initExecutor() {
+        return new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS, new MosBlockingQueue<>(), r -> {
+            Thread thread = new Thread(r);
+            thread.setName("shell-thread-%d");
+            return thread;
+        });
 
-                try {
-                    String[] as = Utils.parseArgs(cmd);
-                    new MosCommandLine(this, out, err).execute(as);
-                } catch (Exception e) {
-                    Utils.printlnErrorMsg(err, e.getMessage());
-                }
-            }
-        } catch (IOException e) {
-            Utils.printlnError(out, e);
-        } finally {
-            callback.onExit(0);
-        }
     }
 
     /**
@@ -161,32 +147,62 @@ public class Shell implements Runnable, org.apache.sshd.server.command.Command {
         this.callback = callback;
     }
 
-    @Override
-    public void start(ChannelSession channel, Environment env) throws IOException {
-        executorService = initExecutor();
-        current = MosSystem.fileSystem().find(new String[] {"/"});
-        executorService.submit(this);
+    // 循环任务
+    private void loop() {
+        try {
+            LineReader reader = LineReaderBuilder.builder()
+                .terminal(TerminalBuilder.builder().streams(in, out).encoding(StandardCharsets.UTF_8).build()).build();
+            while (!stop) {
+                String cmd = reader.readLine(prompt());
+                if ("exit".equals(cmd)) {
+                    Utils.printMsgNotFlush(out, "bye~");
+                    stop = true;
+                    continue;
+                } else if (cmd.length() == 0) {
+                    continue;
+                }
+
+                try {
+                    String[] as = Utils.parseArgs(cmd);
+                    new MosCommandLine(this, out, err).execute(as);
+                } catch (Exception e) {
+                    Utils.printlnErrorMsg(err, e.getMessage());
+                }
+            }
+        } catch (IOException e) {
+            Utils.printlnError(out, e);
+        } finally {
+            callback.onExit(0);
+
+        }
     }
 
-    /**
-     * 初始化线程池
-     *
-     * @return
-     */
-    private ExecutorService initExecutor() {
-        return new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), r -> {
-            Thread thread = new Thread(r);
-            thread.setName("shell-thread-%d");
-            return thread;
-        });
-
+    @Override
+    public void start(ChannelSession channel, Environment env) {
+        current = MosSystem.fileSystem().find(new String[] {"/"});
+        try {
+            executorService.submit(this);
+        } catch (Exception e) {
+            Utils.printlnErrorMsg(err, e.getMessage());
+            throw e;
+        }
     }
 
     @Override
     public void destroy(ChannelSession channel) {
         // 停止循环
         this.stop = true;
-        // 关闭线程池
-        executorService.shutdown();
+        this.executorService.shutdownNow();
+    }
+
+    private final static class MosBlockingQueue<E> extends LinkedBlockingQueue<E> {
+        MosBlockingQueue() {
+            super();
+        }
+
+        @Override
+        public boolean offer(Object o) {
+            return false;
+        }
     }
 }

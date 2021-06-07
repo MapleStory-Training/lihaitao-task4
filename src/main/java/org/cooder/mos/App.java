@@ -7,7 +7,7 @@ package org.cooder.mos;
 import java.io.IOException;
 
 import org.cooder.mos.device.FileDisk;
-import org.cooder.mos.ssh.MosSShServer;
+import org.cooder.mos.ssh.MosSshServer;
 
 public class App {
     public static void main(String[] args) throws IOException {
@@ -15,8 +15,9 @@ public class App {
         MosSystem.fileSystem().bootstrap(disk);
 
         try {
-            MosSShServer.start();
+            MosSshServer.start();
         } finally {
+            MosSshServer.close();
             MosSystem.fileSystem().shutdown();
         }
     }

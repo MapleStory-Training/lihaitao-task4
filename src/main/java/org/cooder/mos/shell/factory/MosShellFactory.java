@@ -2,7 +2,7 @@ package org.cooder.mos.shell.factory;
 
 import org.apache.sshd.server.channel.ChannelSession;
 import org.apache.sshd.server.command.Command;
-import org.apache.sshd.server.shell.InteractiveProcessShellFactory;
+import org.apache.sshd.server.shell.ShellFactory;
 import org.cooder.mos.shell.Shell;
 
 /**
@@ -10,7 +10,7 @@ import org.cooder.mos.shell.Shell;
  *
  * @author lihaitao on 2021/6/5
  */
-public class MosShellFactory extends InteractiveProcessShellFactory {
+public class MosShellFactory implements ShellFactory {
 
     @Override
     public Command createShell(ChannelSession channel) {

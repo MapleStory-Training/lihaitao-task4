@@ -28,7 +28,17 @@ public class ListCommand extends MosCommand {
             textTable.addRowValues(size, time, name);
         }
         try {
-            out.write(textTable.toString().replaceAll("\n", "\r\n").getBytes());
+            // 清掉最后一个换行符
+            String msg = textTable.toString();
+            if (msg.length() > 0) {
+                msg = msg.substring(0, msg.lastIndexOf('\n'));
+            }
+            // 写内容
+            out.write(msg.replaceAll("\n", "\r\n").getBytes());
+            // 如果当前的流是cli流才需要换行，否则不需要
+            if (out == shell.out) {
+                Utils.writeNewLineNotFlush(shell.out);
+            }
         } catch (IOException e) {
             Utils.printlnErrorMsg(err, e.getMessage());
         }

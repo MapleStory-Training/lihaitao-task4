@@ -32,7 +32,8 @@ public class MosCommandLine extends CommandLine {
             hasSuggestion = !suggestions.isEmpty();
         }
         if (!hasSuggestion) {
-            ex.getCommandLine().usage(writer, colorScheme);
+            String msg = ex.getCommandLine().getUsageMessage().replaceAll("\n", "\r\n");
+            Utils.printMsgNotFlush(this.out, msg);
         }
         IExitCodeExceptionMapper exitCodeExceptionMapper = cmd.getExitCodeExceptionMapper();
         return (exitCodeExceptionMapper != null) ? exitCodeExceptionMapper.getExitCode(ex)

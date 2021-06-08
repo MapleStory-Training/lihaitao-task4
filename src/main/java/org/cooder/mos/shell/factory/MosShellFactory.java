@@ -14,6 +14,6 @@ public class MosShellFactory implements ShellFactory {
 
     @Override
     public Command createShell(ChannelSession channel) {
-        return new Shell();
+        return new Shell("/");
     }
 }

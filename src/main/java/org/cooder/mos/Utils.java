@@ -27,7 +27,6 @@ public class Utils {
     public static void printMsgNotFlush(OutputStream outputStream, String msg) {
         try {
             outputStream.write(msg.getBytes());
-            // outputStream.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }

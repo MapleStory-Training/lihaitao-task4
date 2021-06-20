@@ -233,6 +233,10 @@ public class DirectoryTreeNode {
         return entry != null && !isFree();
     }
 
+    public boolean isHidden() {
+        return entry != null && (entry.attrs & DirectoryEntry.ATTR_MASK_HIDDEN) != 0;
+    }
+
     public void reset() {
         this.fold = true;
         this.entry = new DirectoryEntry();

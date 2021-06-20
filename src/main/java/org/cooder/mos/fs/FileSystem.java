@@ -111,7 +111,7 @@ public class FileSystem implements IFileSystem {
         List<String> list = new ArrayList<String>();
         DirectoryTreeNode[] nodes = parent.node.getChildren();
         for (DirectoryTreeNode s : nodes) {
-            if (s.valid()) {
+            if (s.valid() && !s.isHidden()) {
                 list.add(s.getPath());
             }
         }

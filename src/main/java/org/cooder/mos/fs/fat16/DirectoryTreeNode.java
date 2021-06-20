@@ -156,23 +156,25 @@ public class DirectoryTreeNode {
         byte[] bytes = name.getBytes();
         int num = (bytes.length + DirectoryEntry.FILE_NAME_BYTE_LENGTH - 1) / DirectoryEntry.FILE_NAME_BYTE_LENGTH;
         DirectoryTreeNode[] res = new DirectoryTreeNode[num];
-        byte[] buffer = new byte[PER_DIRECTOR_ENTRY_SIZE];
         int index = 0;
         for (int i = 0; i < num; i++) {
+            byte[] data = new byte[PER_DIRECTOR_ENTRY_SIZE];
             // 生成特殊的entry
-            buffer[0] =
+            data[0] =
                 (byte)(i == num - 1 ? (DirectoryEntry.LFN_ATTR_MASK_LAST | (i + 1 & DirectoryEntry.LFN_ATTR_MASK_NUM))
                     : (i + 1 & DirectoryEntry.LFN_ATTR_MASK_NUM));
-            System.arraycopy(bytes, index, buffer, 1, Math.min(10, bytes.length));
+            if (bytes.length - index > 0) {
+                System.arraycopy(bytes, index, data, 1, Math.min(10, bytes.length - index));
+            }
             index += 10;
-            buffer[11] = DirectoryEntry.ATTR_MASK_LFN;
-            if (bytes.length > 10) {
-                System.arraycopy(bytes, index, buffer, 12, Math.min(20, bytes.length - 10));
+            data[11] = DirectoryEntry.ATTR_MASK_LFN;
+            if (bytes.length - index > 0) {
+                System.arraycopy(bytes, index, data, 12, Math.min(20, bytes.length - index));
             }
             index += 20;
             res[i] = nextFreeNode();
             if (res[i] != null) {
-                res[i].entry = DirectoryEntry.from(buffer);
+                res[i].entry = DirectoryEntry.from(data);
             }
         }
 

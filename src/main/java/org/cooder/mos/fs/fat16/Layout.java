@@ -141,7 +141,7 @@ public class Layout {
         public static final byte ATTR_MASK_DIR = 0x10;
         public static final byte ATTR_MASK_ACHIEVE = 0x20;
 
-        public static final byte ATTR_MASK_LFN = (byte)0b11110000;
+        public static final byte ATTR_MASK_LFN = 0b00001111;
 
         public static final int FILE_NAME_MASK_LFN_DELETE = 1 << 7;
 

@@ -11,7 +11,7 @@ import org.cooder.mos.ssh.MosSshServer;
 
 public class App {
     public static void main(String[] args) throws IOException {
-        FileDisk disk = new FileDisk("/tmp/mos-disk");
+        FileDisk disk = new FileDisk("/tmp/mos-disk-v3");
         MosSystem.fileSystem().bootstrap(disk);
 
         try {

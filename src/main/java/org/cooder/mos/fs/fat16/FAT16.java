@@ -166,6 +166,14 @@ public class FAT16 implements IFAT16 {
         node.reset();
         writeCluster(clusterIdx, FREE_CLUSTER);
         writeDirectoryTreeNode(node);
+
+        DirectoryTreeNode[] lfnNodes = node.getLfnNodes();
+        if (lfnNodes != null) {
+            for (DirectoryTreeNode lfnNode : lfnNodes) {
+                lfnNode.reset();
+                writeDirectoryTreeNode(lfnNode);
+            }
+        }
     }
 
     @Override
@@ -216,7 +224,21 @@ public class FAT16 implements IFAT16 {
             throw new IllegalStateException("file exist.");
         }
 
+        // 如果是长文件名 需要进行特殊处理
+        boolean isLfn = name.getBytes().length > 8;
+        DirectoryTreeNode[] lfnNodes = null;
+        if (isLfn) {
+            lfnNodes = parent.createLfnNodes(name);
+            for (DirectoryTreeNode lfnNode : lfnNodes) {
+                writeDirectoryTreeNode(lfnNode);
+            }
+        }
+
         node = parent.create(name, isDir);
+        if (lfnNodes != null) {
+            node.setLfnNodes(lfnNodes);
+            node.getEntry().name = name;
+        }
 
         // update
         DirectoryEntry entry = node.getEntry();
@@ -248,8 +270,10 @@ public class FAT16 implements IFAT16 {
     }
 
     private List<DirectoryTreeNode> loadEntries(DirectoryTreeNode parent, int sectorIdx, int limitSectorCount) {
-        List<DirectoryTreeNode> nodes = new ArrayList<DirectoryTreeNode>(limitSectorCount);
+        List<DirectoryTreeNode> nodes = new ArrayList<>(limitSectorCount);
         byte[] buffer = new byte[Layout.PER_DIRECTOR_ENTRY_SIZE];
+        StringBuilder lfnBuilder = new StringBuilder();
+        List<DirectoryTreeNode> lfnEntries = new ArrayList<>();
         for (int i = 0; i < limitSectorCount; i++) {
             byte[] sectorData = disk.readSector(sectorIdx + i);
             for (int j = 0; j < sectorData.length; j += Layout.PER_DIRECTOR_ENTRY_SIZE) {
@@ -260,8 +284,24 @@ public class FAT16 implements IFAT16 {
                 node.setSectorIdx(sectorIdx + i);
                 node.setSectorOffset(j);
                 nodes.add(node);
+
+                // 处理当前的目录 如果是长文件名则进行处理
+                boolean isLfn = (entry.attrs & DirectoryEntry.ATTR_MASK_LFN) == DirectoryEntry.ATTR_MASK_LFN;
+                if (isLfn && (buffer[0]
+                    & DirectoryEntry.FILE_NAME_MASK_LFN_DELETE) != DirectoryEntry.FILE_NAME_MASK_LFN_DELETE) {
+                    lfnBuilder.append(entry.getLfnName());
+                    lfnEntries.add(node);
+                } else if (lfnBuilder.length() != 0) {
+                    // 处理展示名称 & 长文件子类
+                    entry.name = lfnBuilder.toString();
+                    lfnBuilder = new StringBuilder();
+                    node.setLfnNodes(lfnEntries.toArray(new DirectoryTreeNode[0]));
+                    lfnEntries.clear();
+                }
+
             }
         }
+
         return nodes;
     }
 

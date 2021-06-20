@@ -16,9 +16,9 @@ public class Echo extends MosCommand {
 
     @Override
     public int runCommand() {
-        Utils.printMsgNotFlush(out, content);
+        Utils.printMsg(out, content);
         if (out == shell.out) {
-            Utils.writeNewLineNotFlush(shell.out);
+            Utils.writeNewLine(shell.out);
         }
         return 0;
     }

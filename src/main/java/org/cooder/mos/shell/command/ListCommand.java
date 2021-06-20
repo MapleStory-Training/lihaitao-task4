@@ -37,7 +37,7 @@ public class ListCommand extends MosCommand {
             out.write(msg.replaceAll("\n", "\r\n").getBytes());
             // 如果当前的流是cli流才需要换行，否则不需要
             if (out == shell.out) {
-                Utils.writeNewLineNotFlush(shell.out);
+                Utils.writeNewLine(shell.out);
             }
         } catch (IOException e) {
             Utils.printlnErrorMsg(err, e.getMessage());

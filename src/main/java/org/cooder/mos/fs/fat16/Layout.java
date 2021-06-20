@@ -141,6 +141,15 @@ public class Layout {
         public static final byte ATTR_MASK_DIR = 0x10;
         public static final byte ATTR_MASK_ACHIEVE = 0x20;
 
+        public static final byte ATTR_MASK_LFN = (byte)0b11110000;
+
+        public static final int FILE_NAME_MASK_LFN_DELETE = 1 << 7;
+
+        public static final int FILE_NAME_BYTE_LENGTH = 30;
+        public static final byte LFN_ATTR_MASK_DELETED = (byte)(1 << 7);
+        public static final byte LFN_ATTR_MASK_LAST = 1 << 6;
+        public static final byte LFN_ATTR_MASK_NUM = 0b00111111;
+
         // 8 bytes
         public byte[] fileName = new byte[8];
         public byte[] extension = new byte[3];
@@ -155,6 +164,7 @@ public class Layout {
         public short lastWriteDate;
         public short startingCluster;
         public int fileSize;
+        public String name;
 
         public static DirectoryEntry from(byte[] data) {
             ByteBuffer buf = ByteBuffer.allocateDirect(32);
@@ -174,6 +184,7 @@ public class Layout {
             e.lastWriteDate = buf.getShort();
             e.startingCluster = buf.getShort();
             e.fileSize = buf.getInt();
+            e.name = DirectoryTreeNode.byteArray2String(e.fileName);
 
             return e;
         }
@@ -202,6 +213,16 @@ public class Layout {
 
         public String toString() {
             return String.format("filename: %s, startCluster: %d", new String(fileName), startingCluster);
+        }
+
+        public String getLfnName() {
+            byte[] buffer = this.toBytes();
+            // 读取出文件名称 放在builder中暂存
+            byte[] part1 = new byte[10];
+            byte[] part2 = new byte[20];
+            System.arraycopy(buffer, 1, part1, 0, part1.length);
+            System.arraycopy(buffer, 12, part2, 0, part2.length);
+            return DirectoryTreeNode.byteArray2String(part1) + DirectoryTreeNode.byteArray2String(part2);
         }
     }
 }

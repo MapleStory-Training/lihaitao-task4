@@ -13,8 +13,8 @@ public class Pwd extends MosCommand {
 
     @Override
     public int runCommand() {
-        Utils.printMsgNotFlush(out, shell.currentPath());
-        Utils.writeNewLineNotFlush(shell.out);
+        Utils.printMsg(out, shell.currentPath());
+        Utils.writeNewLine(shell.out);
         return 0;
     }
 }

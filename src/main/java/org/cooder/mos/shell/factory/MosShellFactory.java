@@ -3,7 +3,7 @@ package org.cooder.mos.shell.factory;
 import org.apache.sshd.server.channel.ChannelSession;
 import org.apache.sshd.server.command.Command;
 import org.apache.sshd.server.shell.ShellFactory;
-import org.cooder.mos.shell.Shell;
+import org.cooder.mos.shell.SshShell;
 
 /**
  * <mos的shell工厂>
@@ -14,6 +14,6 @@ public class MosShellFactory implements ShellFactory {
 
     @Override
     public Command createShell(ChannelSession channel) {
-        return new Shell("/");
+        return new SshShell("/");
     }
 }

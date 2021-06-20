@@ -33,7 +33,7 @@ public class MosCommandLine extends CommandLine {
         }
         if (!hasSuggestion) {
             String msg = ex.getCommandLine().getUsageMessage().replaceAll("\n", "\r\n");
-            Utils.printMsgNotFlush(this.out, msg);
+            Utils.printMsg(this.out, msg);
         }
         IExitCodeExceptionMapper exitCodeExceptionMapper = cmd.getExitCodeExceptionMapper();
         return (exitCodeExceptionMapper != null) ? exitCodeExceptionMapper.getExitCode(ex)
@@ -54,7 +54,7 @@ public class MosCommandLine extends CommandLine {
     @Override
     public void usage(PrintWriter out, Help.ColorScheme colorScheme) {
         String usageMessage = getUsageMessage().replaceAll("\n", "\r\n");
-        Utils.printMsgNotFlush(this.out, usageMessage);
+        Utils.printMsg(this.out, usageMessage);
     }
 
     @Override

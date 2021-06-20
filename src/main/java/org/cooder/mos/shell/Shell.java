@@ -7,63 +7,71 @@ package org.cooder.mos.shell;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Scanner;
 
-import org.apache.sshd.server.Environment;
-import org.apache.sshd.server.ExitCallback;
-import org.apache.sshd.server.channel.ChannelSession;
 import org.cooder.mos.MosSystem;
 import org.cooder.mos.Utils;
 import org.cooder.mos.fs.FileDescriptor;
 import org.cooder.mos.fs.IFileSystem;
 import org.cooder.mos.shell.command.*;
-import org.cooder.mos.ssh.MosSshServer;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.terminal.TerminalBuilder;
 
+import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
 @Command(name = "", subcommands = {HelpCommand.class, Mkdir.class, ListCommand.class, Cat.class, Echo.class, Pwd.class,
     Remove.class, Touch.class})
-public class Shell implements Runnable, org.apache.sshd.server.command.Command {
-    public InputStream in;
-    public OutputStream out;
-    public OutputStream err;
+public class Shell implements Runnable {
     private FileDescriptor current;
-    private ExitCallback callback;
-    private static AtomicInteger shellCount = new AtomicInteger(0);
 
-    public Shell(String path) {
-        current = MosSystem.fileSystem().find(new String[] {path});
+    public InputStream in = MosSystem.in;
+    public OutputStream out = MosSystem.out;
+    public OutputStream err = MosSystem.err;
+
+    public Shell(FileDescriptor node) {
+        this.current = node;
     }
 
     public String currentPath() {
         return current.isRoot() ? current.getName() : current.getPath();
     }
 
-    /**
-     * 引导提示
-     * 
-     * @return
-     */
-    private String prompt() {
-        return String.format("root@mos-jason: %s $ ", currentPath());
+    public void loop() {
+        Scanner scanner = null;
+        try {
+            scanner = new Scanner(in);
+            while (true) {
+                prompt();
+                String cmd = scanner.nextLine().trim();
+                if ("exit".equals(cmd)) {
+                    Utils.printlnMsg(this.out, "bye~");
+                    break;
+                } else if (cmd.length() == 0) {
+                    continue;
+                }
+
+                try {
+                    String[] as = Utils.parseArgs(cmd);
+                    new CommandLine(this).execute(as);
+                } catch (Exception e) {
+                    Utils.printlnErrorMsg(err, e.getMessage());
+                }
+            }
+        } finally {
+            Utils.close(scanner);
+        }
     }
 
     @Command(name = "format", hidden = true)
     public void format() throws IOException {
         MosSystem.fileSystem().format();
-        Utils.printMsgNotFlush(out, "disk format success.");
-        Utils.writeNewLineNotFlush(out);
+        Utils.printlnMsg(out, "disk format success.");
     }
 
-    @Command(name = "cd", description = "切换工作目录")
+    @Command(name = "cd")
     public void cd(@Parameters(paramLabel = "<path>") String path) {
         String[] paths = null;
+
         if (path.equals("/")) {
             current = MosSystem.fileSystem().find(new String[] {"/"});
             return;
@@ -81,12 +89,12 @@ public class Shell implements Runnable, org.apache.sshd.server.command.Command {
         paths = absolutePath(path);
         FileDescriptor node = MosSystem.fileSystem().find(paths);
         if (node == null) {
-            Utils.printlnErrorMsg(err, path + ": No such file or directory");
+            Utils.printlnErrorMsg(this.err, path + ": No such file or directory");
             return;
         }
 
         if (!node.isDir()) {
-            Utils.printlnErrorMsg(err, path + ": Not a directory");
+            Utils.printlnErrorMsg(this.err, path + ": No such file or directory");
             return;
         }
 
@@ -113,75 +121,7 @@ public class Shell implements Runnable, org.apache.sshd.server.command.Command {
         loop();
     }
 
-    @Override
-    public void setInputStream(InputStream in) {
-        this.in = in;
-    }
-
-    @Override
-    public void setOutputStream(OutputStream out) {
-        this.out = out;
-    }
-
-    @Override
-    public void setErrorStream(OutputStream err) {
-        this.err = err;
-    }
-
-    @Override
-    public void setExitCallback(ExitCallback callback) {
-        this.callback = callback;
-    }
-
-    // 循环任务
-    private void loop() {
-        try {
-            LineReader reader = LineReaderBuilder.builder()
-                .terminal(TerminalBuilder.builder().streams(in, out).encoding(StandardCharsets.UTF_8).build()).build();
-            while (true) {
-                String cmd = reader.readLine(prompt());
-                if ("exit".equals(cmd)) {
-                    Utils.printMsgNotFlush(out, "bye~");
-                    Utils.writeNewLineNotFlush(out);
-                    break;
-                } else if (cmd.length() == 0) {
-                    continue;
-                }
-
-                try {
-                    String[] as = Utils.parseArgs(cmd);
-                    new MosCommandLine(this, out, err).execute(as);
-                } catch (Exception e) {
-                    Utils.printlnErrorMsg(err, e.getMessage());
-                }
-            }
-        } catch (IOException e) {
-            Utils.printlnError(out, e);
-            callback.onExit(-1, e.getMessage());
-            return;
-        }
-        callback.onExit(0);
-    }
-
-    @Override
-    public void start(ChannelSession channel, Environment env) {
-        // 检查连接数
-        if (shellCount.getAndIncrement() >= MosSshServer.MAX_COUNT) {
-            Utils.printlnErrorMsg(err, "shell连接过多！");
-            throw new RuntimeException();
-        }
-        try {
-            // 异步执行
-            MosSshServer.EXECUTOR_SERVICE.execute(this);
-        } catch (RejectedExecutionException e) {
-            Utils.printlnErrorMsg(err, "shell连接过多!!");
-            throw e;
-        }
-    }
-
-    @Override
-    public void destroy(ChannelSession channel) {
-        // 停止循环
-        shellCount.decrementAndGet();
+    private void prompt() {
+        Utils.printMsg(this.out, String.format("root@mos-nil:%s$", currentPath()));
     }
 }

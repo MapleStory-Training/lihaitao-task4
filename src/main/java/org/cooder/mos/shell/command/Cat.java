@@ -38,7 +38,7 @@ public class Cat extends MosCommand {
             InputStreamReader reader = new InputStreamReader(new FileInputStream(file));
             Utils.copyStreamNoCloseOut(reader, out);
             if (out == shell.out) {
-                Utils.writeNewLineNotFlush(shell.out);
+                Utils.writeNewLine(shell.out);
             }
         } catch (IOException e) {
             Utils.printlnError(err, e);

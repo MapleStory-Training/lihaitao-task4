@@ -44,12 +44,12 @@ public class HelpCommand implements IHelpCommandInitializable2, Runnable {
         if (commands.length > 0) {
             CommandLine subcommand = parent.getSubcommands().get(commands[0]);
             if (subcommand != null) {
-                Utils.printMsgNotFlush(shell.out, subcommand.getUsageMessage(colorScheme).replaceAll("\n", "\r\n"));
+                Utils.printMsg(shell.out, subcommand.getUsageMessage(colorScheme).replaceAll("\n", "\r\n"));
             } else {
                 throw new ParameterException(parent, "Unknown subcommand '" + commands[0] + "'.", null, commands[0]);
             }
         } else {
-            Utils.printMsgNotFlush(shell.out, parent.getUsageMessage(colorScheme).replaceAll("\n", "\r\n"));
+            Utils.printMsg(shell.out, parent.getUsageMessage(colorScheme).replaceAll("\n", "\r\n"));
         }
     }
 

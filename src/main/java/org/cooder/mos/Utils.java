@@ -24,17 +24,29 @@ public class Utils {
         }
     }
 
-    public static void printMsgNotFlush(OutputStream outputStream, String msg) {
+    public static void printlnMsg(OutputStream outputStream, String msg) {
         try {
             outputStream.write(msg.getBytes());
+            outputStream.write("\r\n".getBytes());
+            outputStream.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public static void writeNewLineNotFlush(OutputStream out) {
+    public static void printMsg(OutputStream outputStream, String msg) {
+        try {
+            outputStream.write(msg.getBytes());
+            outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void writeNewLine(OutputStream out) {
         try {
             out.write("\r\n".getBytes());
+            out.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -43,7 +55,7 @@ public class Utils {
     public static void printlnErrorMsg(OutputStream err, String msg) {
         try {
             err.write(msg.getBytes());
-            writeNewLineNotFlush(err);
+            writeNewLine(err);
             err.flush();
         } catch (IOException e) {
             e.printStackTrace();

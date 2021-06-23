@@ -65,6 +65,7 @@ public class Shell implements Runnable {
     @Command(name = "format", hidden = true)
     public void format() throws IOException {
         MosSystem.fileSystem().format();
+        this.current = MosSystem.fileSystem().find(new String[]{"/"});
         Utils.printlnMsg(out, "disk format success.");
     }
 

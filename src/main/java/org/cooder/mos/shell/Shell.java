@@ -24,9 +24,9 @@ import picocli.CommandLine.Parameters;
 public class Shell implements Runnable {
     private FileDescriptor current;
 
-    public InputStream in = MosSystem.in;
-    public OutputStream out = MosSystem.out;
-    public OutputStream err = MosSystem.err;
+    private InputStream in = MosSystem.in;
+    private OutputStream out = MosSystem.out;
+    private OutputStream err = MosSystem.err;
 
     public Shell(FileDescriptor node) {
         this.current = node;
@@ -65,7 +65,7 @@ public class Shell implements Runnable {
     @Command(name = "format", hidden = true)
     public void format() throws IOException {
         MosSystem.fileSystem().format();
-        this.current = MosSystem.fileSystem().find(new String[]{"/"});
+        this.current = MosSystem.fileSystem().find(new String[] {"/"});
         Utils.printlnMsg(out, "disk format success.");
     }
 
@@ -124,5 +124,17 @@ public class Shell implements Runnable {
 
     private void prompt() {
         Utils.printMsg(this.out, String.format("root@mos-nil:%s$", currentPath()));
+    }
+
+    public InputStream getIn() {
+        return in;
+    }
+
+    public OutputStream getOut() {
+        return out;
+    }
+
+    public OutputStream getErr() {
+        return err;
     }
 }

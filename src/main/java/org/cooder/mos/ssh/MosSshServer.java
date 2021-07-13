@@ -2,14 +2,19 @@ package org.cooder.mos.ssh;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import org.apache.sshd.common.util.threads.CloseableExecutorService;
 import org.apache.sshd.common.util.threads.SshThreadPoolExecutor;
+import org.apache.sshd.scp.ScpModuleProperties;
+import org.apache.sshd.scp.server.ScpCommandFactory;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.auth.password.AcceptAllPasswordAuthenticator;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
+import org.cooder.mos.fs.MosScpFileOpener;
 import org.cooder.mos.shell.factory.MosShellFactory;
 
 /**
@@ -19,15 +24,24 @@ import org.cooder.mos.shell.factory.MosShellFactory;
  */
 public class MosSshServer {
 
-    private static final SshServer SERVER = SshServer.setUpDefaultServer();
-
     // 支持的最大连接数
     public static final int MAX_COUNT = 3;
-    public static final CloseableExecutorService EXECUTOR_SERVICE = initExecutor();
+    public static final CloseableExecutorService EXECUTOR_SERVICE = initExecutor().get();
+    private static final SshServer SERVER = SshServer.setUpDefaultServer();
 
     static {
+        // 用scp包裹command factory
+        ScpCommandFactory scpCommandFactory = new ScpCommandFactory.Builder()
+            .withDelegateShellFactory(new MosShellFactory()).withFileOpener(new MosScpFileOpener()).build();
+
+        ScpModuleProperties.PROP_AUTO_SYNC_FILE_ON_WRITE.set(SERVER, true);
+        scpCommandFactory.setExecutorServiceProvider(initExecutor());
+        // scp encoding默认编码集是utf-8
+        ScpModuleProperties.NAME_ENCODING_CHARSET.set(SERVER, StandardCharsets.UTF_8);
+
         SERVER.setPort(21013);
-        SERVER.setShellFactory(new MosShellFactory());
+        SERVER.setShellFactory(scpCommandFactory);
+        SERVER.setCommandFactory(scpCommandFactory);
         SERVER.setPasswordAuthenticator(AcceptAllPasswordAuthenticator.INSTANCE);
         SERVER.setKeyPairProvider(new SimpleGeneratorHostKeyProvider(new File("key.ser").toPath()));
     }
@@ -57,11 +71,12 @@ public class MosSshServer {
      *
      * @return
      */
-    private static CloseableExecutorService initExecutor() {
-        return new SshThreadPoolExecutor(MAX_COUNT, MAX_COUNT, 30, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), r -> {
-            Thread thread = new Thread(r);
-            thread.setName("shell-thread-%d");
-            return thread;
-        });
+    private static Supplier<? extends CloseableExecutorService> initExecutor() {
+        return () -> new SshThreadPoolExecutor(MAX_COUNT, MAX_COUNT, 30, TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
+            r -> {
+                Thread thread = new Thread(r);
+                thread.setName("shell-thread-%d");
+                return thread;
+            });
     }
 }

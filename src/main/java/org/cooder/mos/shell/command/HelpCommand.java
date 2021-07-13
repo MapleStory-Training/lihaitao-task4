@@ -44,12 +44,12 @@ public class HelpCommand implements IHelpCommandInitializable2, Runnable {
         if (commands.length > 0) {
             CommandLine subcommand = parent.getSubcommands().get(commands[0]);
             if (subcommand != null) {
-                Utils.printMsg(shell.out, subcommand.getUsageMessage(colorScheme).replaceAll("\n", "\r\n"));
+                Utils.printMsg(shell.getOut(), subcommand.getUsageMessage(colorScheme).replaceAll("\n", "\r\n"));
             } else {
                 throw new ParameterException(parent, "Unknown subcommand '" + commands[0] + "'.", null, commands[0]);
             }
         } else {
-            Utils.printMsg(shell.out, parent.getUsageMessage(colorScheme).replaceAll("\n", "\r\n"));
+            Utils.printMsg(shell.getOut(), parent.getUsageMessage(colorScheme).replaceAll("\n", "\r\n"));
         }
     }
 
@@ -57,6 +57,6 @@ public class HelpCommand implements IHelpCommandInitializable2, Runnable {
     public void init(CommandLine helpCommandLine, ColorScheme colorScheme, PrintWriter out, PrintWriter err) {
         this.self = helpCommandLine;
         this.colorScheme = colorScheme;
-        this.out = shell.out;
+        this.out = shell.getOut();
     }
 }

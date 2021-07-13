@@ -44,19 +44,19 @@ public abstract class MosCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         if (in == null) {
-            in = shell.in;
+            in = shell.getIn();
         }
         if (out == null) {
-            out = shell.out;
+            out = shell.getOut();
         }
         if (err == null) {
-            err = shell.err;
+            err = shell.getErr();
         }
 
         try {
             return runCommand();
         } catch (Throwable t) {
-            printlnError(shell.err, t);
+            printlnError(shell.getErr(), t);
         }
         return 0;
     }
@@ -81,11 +81,11 @@ public abstract class MosCommand implements Callable<Integer> {
             call();
         } catch (Exception e) {
             // 输出的错误信息要输出到client
-            printlnError(shell.out, e);
+            printlnError(shell.getErr(), e);
         }
 
         out.close();
-        out = shell.out;
+        out = shell.getOut();
     }
 
     TextTable forColumnWidths(int... columnWidths) {

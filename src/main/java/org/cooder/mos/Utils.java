@@ -5,11 +5,13 @@
 package org.cooder.mos;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.cooder.mos.api.MosFile;
 import org.cooder.mos.fs.IFileSystem;
 
 public class Utils {
@@ -99,6 +101,11 @@ public class Utils {
             }
         }
         return ret.toArray(new String[0]);
+    }
+
+    public static MosFile getFileByPath(Path path) {
+        String[] split = Utils.normalizePath(path.toString());
+        return new MosFile(split);
     }
 
     public static String[] parseArgs(String text) {

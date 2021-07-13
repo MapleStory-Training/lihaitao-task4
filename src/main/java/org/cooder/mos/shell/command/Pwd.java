@@ -14,7 +14,7 @@ public class Pwd extends MosCommand {
     @Override
     public int runCommand() {
         Utils.printMsg(out, shell.currentPath());
-        Utils.writeNewLine(shell.out);
+        Utils.writeNewLine(shell.getOut());
         return 0;
     }
 }

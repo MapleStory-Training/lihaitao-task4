@@ -17,8 +17,8 @@ public class Echo extends MosCommand {
     @Override
     public int runCommand() {
         Utils.printMsg(out, content);
-        if (out == shell.out) {
-            Utils.writeNewLine(shell.out);
+        if (out == shell.getOut()) {
+            Utils.writeNewLine(shell.getOut());
         }
         return 0;
     }

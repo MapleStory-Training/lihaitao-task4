@@ -27,10 +27,12 @@ public class FileOutputStream extends OutputStream {
         MosSystem.fileSystem().write(fd, d);
     }
 
+    @Override
     public void flush() {
         MosSystem.fileSystem().flush(fd);
     }
 
+    @Override
     public void close() throws IOException {
         MosSystem.fileSystem().close(fd);
     }

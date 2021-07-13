@@ -21,15 +21,14 @@ import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.terminal.TerminalBuilder;
 
-// @Command(name = "ssh", subcommands = {HelpCommand.class, Mkdir.class, ListCommand.class, Cat.class, Echo.class,
-// Pwd.class,
-// Remove.class, Touch.class})
 public class SshShell extends Shell implements org.apache.sshd.server.command.Command {
     private static AtomicInteger shellCount = new AtomicInteger(0);
-    public OutputStream out;
-    public OutputStream err;
+    private OutputStream out;
+    private OutputStream err;
     private InputStream in;
     private ExitCallback callback;
+    private ChannelSession channel;
+    private Environment env;
 
     public SshShell(String path) {
         super(MosSystem.fileSystem().find(new String[] {path}));
@@ -83,8 +82,13 @@ public class SshShell extends Shell implements org.apache.sshd.server.command.Co
                 }
 
                 try {
-                    String[] as = Utils.parseArgs(cmd);
-                    new MosCommandLine(this, out, err).execute(as);
+                    if (cmd.startsWith("scp")) {
+                        channel.getSession().getFactoryManager().getCommandFactory().createCommand(channel, cmd)
+                            .start(channel, env);
+                    } else {
+                        String[] as = Utils.parseArgs(cmd);
+                        new MosCommandLine(this, out, err).execute(as);
+                    }
                 } catch (Exception e) {
                     Utils.printlnErrorMsg(err, e.getMessage());
                 }
@@ -99,6 +103,9 @@ public class SshShell extends Shell implements org.apache.sshd.server.command.Co
 
     @Override
     public void start(ChannelSession channel, Environment env) {
+        this.channel = channel;
+        this.env = env;
+
         // 检查连接数
         if (shellCount.getAndIncrement() >= MosSshServer.MAX_COUNT) {
             Utils.printlnErrorMsg(err, "shell连接过多！");
@@ -117,5 +124,20 @@ public class SshShell extends Shell implements org.apache.sshd.server.command.Co
     public void destroy(ChannelSession channel) {
         // 停止循环
         shellCount.decrementAndGet();
+    }
+
+    @Override
+    public InputStream getIn() {
+        return in;
+    }
+
+    @Override
+    public OutputStream getOut() {
+        return out;
+    }
+
+    @Override
+    public OutputStream getErr() {
+        return err;
     }
 }

@@ -264,8 +264,8 @@ public class FAT16 implements IFAT16 {
             limit = Layout.SECTORS_PER_CLUSTER;
         }
 
-        List<DirectoryTreeNode> childre = loadEntries(parent, sectorIdx, limit);
-        parent.setChildren(childre.toArray(new DirectoryTreeNode[childre.size()]));
+        List<DirectoryTreeNode> children = loadEntries(parent, sectorIdx, limit);
+        parent.setChildren(children.toArray(new DirectoryTreeNode[children.size()]));
         parent.unfold();
     }
 

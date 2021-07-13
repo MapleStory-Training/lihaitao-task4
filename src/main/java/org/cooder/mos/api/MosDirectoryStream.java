@@ -4,10 +4,8 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Path;
 import java.util.Iterator;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.sshd.common.file.util.MockPath;
 import org.cooder.mos.Utils;
-import org.cooder.mos.fs.FileSystem;
+import org.cooder.mos.fs.MosPath;
 
 /**
  * <信息描述>
@@ -35,10 +33,12 @@ public class MosDirectoryStream implements DirectoryStream {
     static class MosPathIterator implements Iterator<Path> {
         private int index;
         private MosFile[] mosFiles;
+        private Path path;
 
         public MosPathIterator(Path path) {
-            this.mosFiles = Utils.getFileByPath(path).listFiles();
-            index = 0;
+            Path filePath = Utils.getFilePath(path);
+            this.mosFiles = Utils.getFileByPath(filePath).listFiles();
+            this.path = filePath;
         }
 
         @Override
@@ -51,8 +51,9 @@ public class MosDirectoryStream implements DirectoryStream {
             if (mosFiles == null || index >= mosFiles.length) {
                 throw new IndexOutOfBoundsException();
             }
-            String path = FileSystem.separator + StringUtils.join(mosFiles[index++].getPath(), FileSystem.separator);
-            return new MockPath(path);
+            String parentPath = path.toString();
+            // String path = FileSystem.separator + StringUtils.join(mosFiles[index++].getPath(), FileSystem.separator);
+            return new MosPath(mosFiles[index++].getName(), parentPath);
         }
     }
 }

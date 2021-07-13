@@ -19,6 +19,7 @@ import org.apache.sshd.scp.common.ScpFileOpener;
 import org.apache.sshd.scp.common.ScpSourceStreamResolver;
 import org.apache.sshd.scp.common.ScpTargetStreamResolver;
 import org.apache.sshd.scp.common.helpers.ScpTimestampCommandDetails;
+import org.cooder.mos.Utils;
 import org.cooder.mos.api.FileInputStream;
 import org.cooder.mos.api.FileOutputStream;
 import org.cooder.mos.api.MosDirectoryStream;
@@ -57,14 +58,18 @@ public class MosScpFileOpener implements ScpFileOpener {
 
     @Override
     public boolean sendAsRegularFile(Session session, Path path, LinkOption... options) throws IOException {
-        MosFile mosFile = getFileByPath(path);
+        MosFile mosFile = getFile(path);
         return mosFile.exist() && !mosFile.isDir();
     }
 
     @Override
     public boolean sendAsDirectory(Session session, Path path, LinkOption... options) throws IOException {
-        MosFile mosFile = getFileByPath(path);
+        MosFile mosFile = getFile(path);
         return mosFile.exist() && mosFile.isDir();
+    }
+
+    private MosFile getFile(Path path) {
+        return getFileByPath(Utils.getFilePath(path));
     }
 
     @Override

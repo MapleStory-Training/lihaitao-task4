@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
 
+import org.apache.sshd.common.file.util.MockPath;
 import org.apache.sshd.common.session.Session;
 import org.apache.sshd.scp.common.ScpFileOpener;
 import org.apache.sshd.scp.common.ScpSourceStreamResolver;
@@ -31,8 +32,17 @@ public class MosScpSourceStreamResolver implements ScpSourceStreamResolver {
     private ScpFileOpener opener;
 
     public MosScpSourceStreamResolver(Path path, ScpFileOpener opener) {
-        this.path = path;
-        this.file = Utils.getFileByPath(path);
+        Path filePath = path;
+        if (path.getParent() != null) {
+            String parentPath = path.getParent().toString();
+            if (parentPath.endsWith("/")) {
+                filePath = new MockPath(parentPath + path.toString());
+            } else {
+                filePath = new MockPath(parentPath + FileSystem.separator + path.toString());
+            }
+        }
+        this.path = filePath;
+        this.file = Utils.getFileByPath(filePath);
         this.perms = EnumSet.noneOf(PosixFilePermission.class);
         this.opener = opener;
 

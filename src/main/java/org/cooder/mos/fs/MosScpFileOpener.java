@@ -6,10 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.DirectoryStream;
-import java.nio.file.LinkOption;
-import java.nio.file.OpenOption;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.HashSet;
 import java.util.Set;
@@ -19,11 +16,7 @@ import org.apache.sshd.scp.common.ScpFileOpener;
 import org.apache.sshd.scp.common.ScpSourceStreamResolver;
 import org.apache.sshd.scp.common.ScpTargetStreamResolver;
 import org.apache.sshd.scp.common.helpers.ScpTimestampCommandDetails;
-import org.cooder.mos.Utils;
-import org.cooder.mos.api.FileInputStream;
-import org.cooder.mos.api.FileOutputStream;
-import org.cooder.mos.api.MosDirectoryStream;
-import org.cooder.mos.api.MosFile;
+import org.cooder.mos.api.*;
 
 /**
  * <实现自己的scp file opener>
@@ -58,18 +51,14 @@ public class MosScpFileOpener implements ScpFileOpener {
 
     @Override
     public boolean sendAsRegularFile(Session session, Path path, LinkOption... options) throws IOException {
-        MosFile mosFile = getFile(path);
+        MosFile mosFile = getFileByPath(path);
         return mosFile.exist() && !mosFile.isDir();
     }
 
     @Override
     public boolean sendAsDirectory(Session session, Path path, LinkOption... options) throws IOException {
-        MosFile mosFile = getFile(path);
+        MosFile mosFile = getFileByPath(path);
         return mosFile.exist() && mosFile.isDir();
-    }
-
-    private MosFile getFile(Path path) {
-        return getFileByPath(Utils.getFilePath(path));
     }
 
     @Override
@@ -110,11 +99,6 @@ public class MosScpFileOpener implements ScpFileOpener {
             mosFile.mkdir();
         }
 
-        /* 更新时间
-        if (preserve) {
-            updateFileProperties(file, permissions, time);
-        }
-        */
         return file;
     }
 
@@ -127,5 +111,11 @@ public class MosScpFileOpener implements ScpFileOpener {
     @Override
     public DirectoryStream<Path> getLocalFolderChildren(Session session, Path path) throws IOException {
         return new MosDirectoryStream(path);
+    }
+
+    @Override
+    public Path resolveLocalPath(Session session, java.nio.file.FileSystem fileSystem, String commandPath)
+        throws IOException, InvalidPathException {
+        return new MosPath(commandPath);
     }
 }

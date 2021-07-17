@@ -11,9 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.sshd.common.file.util.MockPath;
 import org.cooder.mos.api.MosFile;
-import org.cooder.mos.fs.FileSystem;
 import org.cooder.mos.fs.IFileSystem;
 
 public class Utils {
@@ -108,19 +106,6 @@ public class Utils {
     public static MosFile getFileByPath(Path path) {
         String[] split = Utils.normalizePath(path.toString());
         return new MosFile(split);
-    }
-
-    public static Path getFilePath(Path path) {
-        Path filePath = path;
-        if (path.getParent() != null) {
-            String parentPath = path.getParent().toString();
-            if (parentPath.endsWith("/")) {
-                filePath = new MockPath(parentPath + path.toString());
-            } else {
-                filePath = new MockPath(parentPath + FileSystem.separator + path.toString());
-            }
-        }
-        return filePath;
     }
 
     public static String[] parseArgs(String text) {

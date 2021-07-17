@@ -5,7 +5,6 @@ import java.nio.file.Path;
 import java.util.Iterator;
 
 import org.cooder.mos.Utils;
-import org.cooder.mos.fs.MosPath;
 
 /**
  * <信息描述>
@@ -33,12 +32,9 @@ public class MosDirectoryStream implements DirectoryStream {
     static class MosPathIterator implements Iterator<Path> {
         private int index;
         private MosFile[] mosFiles;
-        private Path path;
 
-        public MosPathIterator(Path path) {
-            Path filePath = Utils.getFilePath(path);
-            this.mosFiles = Utils.getFileByPath(filePath).listFiles();
-            this.path = filePath;
+        MosPathIterator(Path path) {
+            this.mosFiles = Utils.getFileByPath(path).listFiles();
         }
 
         @Override
@@ -51,9 +47,8 @@ public class MosDirectoryStream implements DirectoryStream {
             if (mosFiles == null || index >= mosFiles.length) {
                 throw new IndexOutOfBoundsException();
             }
-            String parentPath = path.toString();
-            // String path = FileSystem.separator + StringUtils.join(mosFiles[index++].getPath(), FileSystem.separator);
-            return new MosPath(mosFiles[index++].getName(), parentPath);
+
+            return new MosPath(mosFiles[index++].getAbsolutePath());
         }
     }
 }

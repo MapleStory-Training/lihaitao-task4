@@ -7,6 +7,7 @@ package org.cooder.mos.api;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cooder.mos.MosSystem;
 import org.cooder.mos.Utils;
 import org.cooder.mos.fs.FileDescriptor;
@@ -22,6 +23,15 @@ public class MosFile implements IFile {
     public MosFile(String[] paths) {
         this.paths = paths;
         fd = MosSystem.fileSystem().find(paths);
+    }
+
+    public String getAbsolutePath() {
+        String path = "";
+        if (!"/".equals(paths[0])) {
+            path = "/";
+        }
+        String join = StringUtils.join(paths, "/");
+        return path + join;
     }
 
     public String[] getPath() {
